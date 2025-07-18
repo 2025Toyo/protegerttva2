@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pacientes - Fundación Proteger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f4ea;
+      padding: 20px;
+    }
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      border: 1px solid #a5d6a7;
+      border-radius: 6px;
+      max-width: 400px;
+      margin: auto;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #388e3c;
+    }
+    .listado {
+      margin-top: 30px;
+    }
+    .paciente {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+    }
+    a.volver {
+      display: block;
+      margin: 15px auto;
+      text-align: center;
+      text-decoration: none;
+      background: #2e7d32;
+      color: white;
+      padding: 10px;
+      width: 150px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>👤 Pacientes</h1>
+
+  <form id="pacienteForm">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="number" id="edad" placeholder="Edad" required>
+    <input type="text" id="direccion" placeholder="Dirección" required>
+    <input type="date" id="fecha_nacimiento" placeholder="Fecha de nacimiento" required>
+    <input type="text" id="nacionalidad" placeholder="Nacionalidad" required>
+    <button type="submit">Guardar Paciente</button>
+  </form>
+
+  <div class="listado" id="listaPacientes"></div>
+
+  <a href="index.html" class="volver">⬅ Volver</a>
+
+  <script>
+    const API_URL = '/api/pacientes';
+
+    async function cargarPacientes() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const lista = document.getElementById('listaPacientes');
+      lista.innerHTML = '';
+      data.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'paciente';
+        div.innerHTML = `
+          <strong>${p.nombre}</strong> - ${p.edad} años <br>
+          Dirección: ${p.direccion} <br>
+          Fecha Nac.: ${p.fecha_nacimiento} <br>
+          Nacionalidad: ${p.nacionalidad}
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    document.getElementById('pacienteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nuevoPaciente = {
+        nombre: document.getElementById('nombre').value,
+        edad: document.getElementById('edad').value,
+        direccion: document.getElementById('direccion').value,
+        fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+        nacionalidad: document.getElementById('nacionalidad').value
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoPaciente)
+      });
+      document.getElementById('pacienteForm').reset();
+      cargarPacientes();
+    });
+
+    cargarPacientes();
+  </script>
+</body>
+</html>

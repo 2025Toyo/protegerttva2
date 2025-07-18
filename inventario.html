@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventario - Fundación Proteger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f4ea;
+      padding: 20px;
+    }
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      border: 1px solid #a5d6a7;
+      border-radius: 6px;
+      max-width: 400px;
+      margin: auto;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #388e3c;
+    }
+    .listado {
+      margin-top: 30px;
+    }
+    .producto {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+    }
+    a.volver {
+      display: block;
+      margin: 15px auto;
+      text-align: center;
+      text-decoration: none;
+      background: #2e7d32;
+      color: white;
+      padding: 10px;
+      width: 150px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📦 Inventario</h1>
+
+  <form id="inventarioForm">
+    <input type="text" id="nombre" placeholder="Nombre del Producto" required>
+    <textarea id="descripcion" placeholder="Descripción"></textarea>
+    <input type="number" id="cantidad" placeholder="Cantidad" required>
+    <select id="movimiento" required>
+      <option value="">Tipo de movimiento</option>
+      <option value="entrada">Entrada</option>
+      <option value="salida">Salida</option>
+    </select>
+    <button type="submit">Guardar Producto</button>
+  </form>
+
+  <div class="listado" id="listaInventario"></div>
+
+  <a href="index.html" class="volver">⬅ Volver</a>
+
+  <script>
+    const API_URL = '/api/inventario';
+
+    async function cargarInventario() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const lista = document.getElementById('listaInventario');
+      lista.innerHTML = '';
+      data.forEach(prod => {
+        const div = document.createElement('div');
+        div.className = 'producto';
+        div.innerHTML = `
+          <strong>${prod.nombre}</strong> (${prod.movimiento})<br>
+          ${prod.descripcion}<br>
+          Cantidad: ${prod.cantidad}
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    document.getElementById('inventarioForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nuevoProd = {
+        nombre: document.getElementById('nombre').value,
+        descripcion: document.getElementById('descripcion').value,
+        cantidad: document.getElementById('cantidad').value,
+        movimiento: document.getElementById('movimiento').value
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoProd)
+      });
+      document.getElementById('inventarioForm').reset();
+      cargarInventario();
+    });
+
+    cargarInventario();
+  </script>
+</body>
+</html>

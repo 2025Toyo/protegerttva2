@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Turnos - Fundación Proteger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f4ea;
+      padding: 20px;
+    }
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      border: 1px solid #a5d6a7;
+      border-radius: 6px;
+      max-width: 400px;
+      margin: auto;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #388e3c;
+    }
+    .listado {
+      margin-top: 30px;
+    }
+    .turno {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+    }
+    a.volver {
+      display: block;
+      margin: 15px auto;
+      text-align: center;
+      text-decoration: none;
+      background: #2e7d32;
+      color: white;
+      padding: 10px;
+      width: 150px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📅 Turnos</h1>
+
+  <form id="turnoForm">
+    <input type="text" id="nombre" placeholder="Nombre del Paciente" required>
+    <input type="date" id="fecha" placeholder="Fecha del turno" required>
+    <input type="time" id="hora" placeholder="Hora" required>
+    <textarea id="nota" placeholder="Nota o comentario adicional"></textarea>
+    <button type="submit">Guardar Turno</button>
+  </form>
+
+  <div class="listado" id="listaTurnos"></div>
+
+  <a href="index.html" class="volver">⬅ Volver</a>
+
+  <script>
+    const API_URL = '/api/turnos';
+
+    async function cargarTurnos() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const lista = document.getElementById('listaTurnos');
+      lista.innerHTML = '';
+      data.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'turno';
+        div.innerHTML = `
+          <strong>Paciente:</strong> ${t.nombre}<br>
+          <strong>Fecha:</strong> ${t.fecha}<br>
+          <strong>Hora:</strong> ${t.hora}<br>
+          <strong>Nota:</strong> ${t.nota}
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    document.getElementById('turnoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nuevoTurno = {
+        nombre: document.getElementById('nombre').value,
+        fecha: document.getElementById('fecha').value,
+        hora: document.getElementById('hora').value,
+        nota: document.getElementById('nota').value
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoTurno)
+      });
+      document.getElementById('turnoForm').reset();
+      cargarTurnos();
+    });
+
+    cargarTurnos();
+  </script>
+</body>
+</html>

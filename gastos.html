@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gastos - Fundación Proteger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f4ea;
+      padding: 20px;
+    }
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      border: 1px solid #a5d6a7;
+      border-radius: 6px;
+      max-width: 400px;
+      margin: auto;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #388e3c;
+    }
+    .listado {
+      margin-top: 30px;
+    }
+    .gasto {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #a5d6a7;
+      border-radius: 4px;
+    }
+    a.volver {
+      display: block;
+      margin: 15px auto;
+      text-align: center;
+      text-decoration: none;
+      background: #2e7d32;
+      color: white;
+      padding: 10px;
+      width: 150px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>💸 Gastos</h1>
+
+  <form id="gastoForm">
+    <select id="tipo" required>
+      <option value="">Tipo de movimiento</option>
+      <option value="entrada">Entrada</option>
+      <option value="salida">Salida</option>
+    </select>
+    <input type="number" id="monto" placeholder="Monto" required>
+    <textarea id="descripcion" placeholder="Descripción" required></textarea>
+    <input type="date" id="fecha" required>
+    <button type="submit">Guardar Gasto</button>
+  </form>
+
+  <div class="listado" id="listaGastos"></div>
+
+  <a href="index.html" class="volver">⬅ Volver</a>
+
+  <script>
+    const API_URL = '/api/gastos';
+
+    async function cargarGastos() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const lista = document.getElementById('listaGastos');
+      lista.innerHTML = '';
+      let totalEntradas = 0;
+      let totalSalidas = 0;
+      data.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'gasto';
+        div.innerHTML = `
+          <strong>${g.tipo.toUpperCase()}</strong> - ${g.monto} <br>
+          ${g.descripcion}<br>
+          Fecha: ${g.fecha}
+        `;
+        lista.appendChild(div);
+
+        if (g.tipo === 'entrada') totalEntradas += parseFloat(g.monto);
+        if (g.tipo === 'salida') totalSalidas += parseFloat(g.monto);
+      });
+
+      const resumen = document.createElement('div');
+      resumen.className = 'gasto';
+      resumen.innerHTML = `
+        <strong>Resumen:</strong><br>
+        Total Entradas: ${totalEntradas}<br>
+        Total Salidas: ${totalSalidas}<br>
+        Balance: ${totalEntradas - totalSalidas}
+      `;
+      lista.appendChild(resumen);
+    }
+
+    document.getElementById('gastoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nuevoGasto = {
+        tipo: document.getElementById('tipo').value,
+        monto: document.getElementById('monto').value,
+        descripcion: document.getElementById('descripcion').value,
+        fecha: document.getElementById('fecha').value
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoGasto)
+      });
+      document.getElementById('gastoForm').reset();
+      cargarGastos();
+    });
+
+    cargarGastos();
+  </script>
+</body>
+</html>
